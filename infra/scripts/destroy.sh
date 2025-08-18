@@ -5,24 +5,27 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${HERE}/lib.sh"
 
 require_env DEPLOY_ENV
-require_env LOCATION
 require_env AZURE_SUBSCRIPTION_ID
-require_env NAME_PREFIX
 validate_env
 
 az account set --subscription "${AZURE_SUBSCRIPTION_ID}"
 
+PARAM_FILE="$(param_file_for_env)"
+
+# Extract namePrefix from the param file (simple grep; assumes single-line assign)
+NAME_PREFIX="$(grep -E '^\s*param\s+namePrefix\s*=\s*' "${PARAM_FILE}" | sed -E "s/.*=\s*'([^']+)'.*/\1/")"
+if [[ -z "${NAME_PREFIX}" ]]; then
+  echo "ERROR: Could not read namePrefix from ${PARAM_FILE}" >&2
+  exit 4
+fi
+
 RG_NAME="${NAME_PREFIX}-${DEPLOY_ENV}-rg"
 
 echo "==> WARNING: This will delete resource group: ${RG_NAME}"
-read -p "Are you sure? (type '${RG_NAME}' to confirm): " confirm
+read -p "Type '${RG_NAME}' to confirm: " confirm
+[[ "$confirm" == "$RG_NAME" ]] || { echo "Aborted."; exit 1; }
 
-if [[ "$confirm" != "$RG_NAME" ]]; then
-  echo "Aborted."
-  exit 1
-fi
-
-echo "==> Deleting resource group ${RG_NAME} in subscription ${AZURE_SUBSCRIPTION_ID}..."
+echo "==> Deleting resource group ${RG_NAME}..."
 az group delete --name "${RG_NAME}" --yes --no-wait
 
-echo "==> Destroy triggered. Resources are being deleted asynchronously."
+echo "==> Destroy triggered."

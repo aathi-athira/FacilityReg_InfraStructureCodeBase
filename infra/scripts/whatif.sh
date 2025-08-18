@@ -7,7 +7,6 @@ source "${HERE}/lib.sh"
 require_env DEPLOY_ENV
 require_env LOCATION
 require_env AZURE_SUBSCRIPTION_ID
-require_env NAME_PREFIX
 validate_env
 
 # Ensure the right subscription is selected
@@ -19,7 +18,6 @@ echo "==> what-if for env=${DEPLOY_ENV} location=${LOCATION}"
 az deployment sub what-if \
   --location "${LOCATION}" \
   --template-file infra/main.bicep \
-  --parameters @"${PARAM_FILE}" \
-               namePrefix="${NAME_PREFIX}" \
+  --parameters "${PARAM_FILE}" \
                location="${LOCATION}" \
                env="${DEPLOY_ENV}"
