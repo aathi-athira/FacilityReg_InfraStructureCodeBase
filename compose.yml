@@ -11,11 +11,7 @@ services:
       - .:/workspace
       # Mount SSH keys if you have them
       - .ssh:/home/azureuser/.ssh:ro
-    environment:
-      # Set Azure CLI to use mounted config
-      - AZURE_CONFIG_DIR=/home/azureuser/.azure
-      # Set default subscription if you have one
-      # - AZURE_SUBSCRIPTION_ID=your-subscription-id
+    env_file: .env
     working_dir: /workspace
     stdin_open: true
     tty: true
