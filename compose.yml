@@ -1,0 +1,33 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: facility_reg_infra
+    volumes:
+      # Mount your local Azure config and credentials
+      - .azure:/home/azureuser/.azure:rw
+      # Mount your project directory
+      - .:/workspace
+      # Mount SSH keys if you have them
+      - .ssh:/home/azureuser/.ssh:ro
+    environment:
+      # Set Azure CLI to use mounted config
+      - AZURE_CONFIG_DIR=/home/azureuser/.azure
+      # Set default subscription if you have one
+      # - AZURE_SUBSCRIPTION_ID=your-subscription-id
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+    # Keep container running
+    command: tail -f /dev/null
+    # Restart policy for development
+    restart: unless-stopped
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
